@@ -1,0 +1,9 @@
+{
+  "app": {
+    "logoAlt": "App Logo",
+    "name": "TConv"
+  },
+  "converter": {
+    "title": "DJI -> FLIR"
+  }
+}

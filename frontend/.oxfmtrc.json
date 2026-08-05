@@ -1,0 +1,9 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["coverage/**", "dist/**", "pnpm-lock.yaml", "wailsjs/**"],
+  "sortPackageJson": false,
+  "sortTailwindcss": {
+    "stylesheet": "./src/index.css",
+    "functions": ["cn", "cva", "clsx"]
+  }
+}
