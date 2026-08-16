@@ -1,9 +1,25 @@
 {
   "app": {
-    "logoAlt": "App Logo",
-    "name": "TConv"
+    "logoAlt": "App Logo"
   },
   "converter": {
-    "title": "DJI -> FLIR"
+    "title": "Convert.",
+    "description": "Convert DJI RJPEGs to FLIR RJPEGs"
+  },
+  "parameterPicker": {
+    "useLRFCheckbox": "Use LRF measurement as distance",
+    "useLRFDescription": "If active, the distance the DJI drone measured using its Laser Range Finder will be set as the thermography's distance parameter",
+    "selectFiles": "select files",
+    "selectFilesTip": "each selected file will be converted",
+    "selectFolder": "select a folder",
+    "selectFolderTip": "all files in the selected folder will be converted",
+    "settings": "Settings",
+    "input": "Input",
+    "filesSelected": "{{numberOfFiles}} files selected",
+    "clearFileSelection": "clear file selection",
+    "output": "Output",
+    "suffix": "Suffix",
+    "suffixDescription": "The suffix will be appended to the file name of each converted image",
+    "selectOutputFolder": "select an output folder"
   }
 }

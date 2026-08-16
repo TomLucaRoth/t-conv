@@ -3,12 +3,16 @@ package backend
 import (
 	"bufio"
 	"context"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+const inputFilePattern = "*.JPG;*.JPEG;*.jpg;*.jpeg"
 
 // App struct
 type App struct {
@@ -74,7 +78,91 @@ func (a *App) Startup(ctx context.Context) {
 	close(a.startupDone)
 }
 
-// Greet returns a greeting for the given name
+func (a *App) OpenInputFilePicker() ([]string, error) {
+	selection, err := runtime.OpenMultipleFilesDialog(a.ctx, runtime.OpenDialogOptions{
+		Title:           "Input",
+		ShowHiddenFiles: true,
+		Filters: []runtime.FileFilter{
+			{
+				DisplayName: "DJI RJPEGs",
+				Pattern:     inputFilePattern,
+			},
+		},
+	})
+	if err != nil {
+		return selection, err
+	}
+
+	return selection, nil
+}
+
+func (a *App) OpenInputFolderPicker() ([]string, error) {
+	selection, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+		Title:           "Input",
+		ShowHiddenFiles: true,
+		Filters: []runtime.FileFilter{
+			{
+				DisplayName: "DJI RJPEGs",
+				Pattern:     inputFilePattern,
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if selection == "" {
+		return []string{}, nil
+	}
+
+	return matchingFiles(selection, inputFilePattern)
+}
+
+func matchingFiles(directory, pattern string) ([]string, error) {
+	entries, err := os.ReadDir(directory)
+	if err != nil {
+		return nil, err
+	}
+
+	patterns := strings.Split(pattern, ";")
+	files := make([]string, 0)
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		for _, pattern := range patterns {
+			matches, err := filepath.Match(pattern, entry.Name())
+			if err != nil {
+				return nil, err
+			}
+			if matches {
+				files = append(files, filepath.Join(directory, entry.Name()))
+				break
+			}
+		}
+	}
+
+	return files, nil
+}
+
+func (a *App) OpenSaveLocationPicker() (string, error) {
+	selection, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+		Title:           "Output",
+		ShowHiddenFiles: true,
+		Filters: []runtime.FileFilter{
+			{
+				DisplayName: "DJI RJPEGs",
+				Pattern:     inputFilePattern,
+			},
+		},
+	})
+	if err != nil {
+		return selection, err
+	}
+
+	return selection, nil
+}
+
 func (a *App) RunConversion(filepaths []string, useLRF bool, outputDir string, suffix string) error {
 	<-a.startupDone
 
@@ -108,7 +196,7 @@ func (a *App) RunConversion(filepaths []string, useLRF bool, outputDir string, s
 		for scanner.Scan() {
 			line := scanner.Text()
 			if progressString := strings.TrimPrefix(line, "PROGRESS: "); progressString != line {
-				progress, err := strconv.Atoi(progressString);
+				progress, err := strconv.Atoi(progressString)
 				if err != nil {
 					runtime.LogWarningf(a.ctx, "Was unable to parse progress update as int: %s", err.Error())
 					continue

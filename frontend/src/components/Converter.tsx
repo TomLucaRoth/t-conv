@@ -1,13 +1,14 @@
 import { useTranslation } from "react-i18next";
+import ParameterPicker from "./ParameterPicker";
 
 function Converter() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex w-screen flex-col items-center">
-      <h2 className="font-heading text-[2.5rem] font-bold text-foreground">
-        {t("converter.title")}
-      </h2>
+    <div className="flex flex-col p-5 w-[70vw]">
+      <h2 className="text-foreground font-heading text-[2rem] font-semibold">{t("converter.title")}</h2>
+      <p className="text-muted-foreground">{t("converter.description")}</p>
+      <ParameterPicker />
     </div>
   );
 }
