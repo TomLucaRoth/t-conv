@@ -20,6 +20,7 @@
     "output": "Output",
     "suffix": "Suffix",
     "suffixDescription": "The suffix will be appended to the file name of each converted image",
+    "invalidSuffix": "The suffix cannot contain control characters or any of < > : \" / \\ | ? * or end with a space or period",
     "selectOutputFolder": "select an output folder"
   }
 }

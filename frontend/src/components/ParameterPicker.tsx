@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "./ui/checkbox";
@@ -5,6 +6,7 @@ import {
   Field,
   FieldContent,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field"
@@ -27,6 +29,8 @@ export function isValidFileSuffix(suffix: string): boolean {
 function ParameterPicker() {
   const { t } = useTranslation();
   const { useLRF, setUseLRF, inputFiles, setInputFiles } = useConversionParametersStore();
+  const [suffix, setSuffix] = useState("");
+  const suffixIsInvalid = !isValidFileSuffix(suffix);
 
   const handleSelectFiles = () => {
     OpenInputFilePicker().then((inputFiles) => {
@@ -101,12 +105,26 @@ function ParameterPicker() {
       <Separator className={"mt-3 mb-2"}/>
       <h3 className="font-heading font-semibold pb-2 pt-2">{t("parameterPicker.output")}</h3>
       <FieldGroup>
-        <Field>
+        <Field data-invalid={suffixIsInvalid}>
           <FieldLabel htmlFor="input-suffix">{t("parameterPicker.suffix")}</FieldLabel>
-          <Input id="input-suffix" placeholder="-converted"/>
-          <FieldDescription>
+          <Input
+            id="input-suffix"
+            value={suffix}
+            onChange={(event) => setSuffix(event.target.value)}
+            placeholder="-converted"
+            aria-invalid={suffixIsInvalid}
+            aria-describedby={suffixIsInvalid
+              ? "input-suffix-description input-suffix-error"
+              : "input-suffix-description"}
+          />
+          <FieldDescription id="input-suffix-description">
             {t("parameterPicker.suffixDescription")}
           </FieldDescription>
+          {suffixIsInvalid && (
+            <FieldError id="input-suffix-error">
+              {t("parameterPicker.invalidSuffix")}
+            </FieldError>
+          )}
         </Field>
         <Button>{t("parameterPicker.selectOutputFolder")}</Button>
       </FieldGroup>
