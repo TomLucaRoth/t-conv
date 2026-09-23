@@ -149,12 +149,6 @@ func (a *App) OpenSaveLocationPicker() (string, error) {
 	selection, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
 		Title:           "Output",
 		ShowHiddenFiles: true,
-		Filters: []runtime.FileFilter{
-			{
-				DisplayName: "DJI RJPEGs",
-				Pattern:     inputFilePattern,
-			},
-		},
 	})
 	if err != nil {
 		return selection, err

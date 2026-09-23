@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast"
 import { Checkbox } from "./ui/checkbox";
 import {
   Field,
@@ -9,13 +10,17 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
+} from "@/components/ui/field";
 import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Input } from "./ui/input";
 import { useConversionParametersStore } from "@/stores/conversionParameterStore";
-import { X } from 'lucide-react';
-import { OpenInputFilePicker, OpenInputFolderPicker } from "../../wailsjs/go/backend/App"
+import { X } from "lucide-react";
+import {
+  OpenInputFilePicker,
+  OpenInputFolderPicker,
+  OpenSaveLocationPicker,
+} from "../../wailsjs/go/backend/App";
 
 export function isValidFileSuffix(suffix: string): boolean {
   const containsInvalidCharacter =
@@ -28,7 +33,8 @@ export function isValidFileSuffix(suffix: string): boolean {
 
 function ParameterPicker() {
   const { t } = useTranslation();
-  const { useLRF, setUseLRF, inputFiles, setInputFiles } = useConversionParametersStore();
+  const { useLRF, setUseLRF, inputFiles, setInputFiles, outputFolder, setOutputFolder } =
+    useConversionParametersStore();
   const [suffix, setSuffix] = useState("");
   const suffixIsInvalid = !isValidFileSuffix(suffix);
 
@@ -38,36 +44,53 @@ function ParameterPicker() {
         return;
       }
       setInputFiles(inputFiles);
-    })
-  }
+    });
+  };
 
-  const handleSelectFolder = () => {
+  const handleSelectInputFolder = () => {
     OpenInputFolderPicker().then((inputFiles) => {
       if (inputFiles.length === 0) {
+        toast.add({
+          type: "warning",
+          title: t("parameterPicker.noFilesFoundTitle"),
+          description: t("parameterPicker.noFilesFoundDescription")
+        })
         return;
       }
       setInputFiles(inputFiles);
-    })
-  }
+    });
+  };
+
+  const handleSelectOutputFolder = () => {
+    OpenSaveLocationPicker().then((outputFolder) => {
+      if (outputFolder === "") {
+        return;
+      }
+      setOutputFolder(outputFolder);
+    });
+  };
 
   return (
     <div className="flex flex-col pt-4">
-      <h3 className="font-heading font-semibold pt-2">{t("parameterPicker.settings")}</h3>
+      <h3 className="pt-2 font-heading font-semibold">{t("parameterPicker.settings")}</h3>
       <FieldGroup className="py-2">
         <Field orientation={"horizontal"}>
-          <Checkbox checked={useLRF} onCheckedChange={setUseLRF} id="use-lrf-checkbox" name="use-lrf-checkbox"/>
+          <Checkbox
+            checked={useLRF}
+            onCheckedChange={setUseLRF}
+            id="use-lrf-checkbox"
+            name="use-lrf-checkbox"
+          />
           <FieldContent>
             <FieldLabel htmlFor="use-lrf-checkbox">
               {t("parameterPicker.useLRFCheckbox")}
             </FieldLabel>
-            <FieldDescription>
-              {t("parameterPicker.useLRFDescription")}
-            </FieldDescription>
+            <FieldDescription>{t("parameterPicker.useLRFDescription")}</FieldDescription>
           </FieldContent>
         </Field>
       </FieldGroup>
-      <Separator className={"mt-1 mb-2"}/>
-      <h3 className="font-heading font-semibold pb-2">{t("parameterPicker.input")}</h3>
+      <Separator className={"mt-1 mb-2"} />
+      <h3 className="pb-2 font-heading font-semibold">{t("parameterPicker.input")}</h3>
       {inputFiles.length !== 0 ? (
         <div className="flex flex-row items-center gap-2">
           <p>{t("parameterPicker.filesSelected", { numberOfFiles: inputFiles.length })}</p>
@@ -77,33 +100,31 @@ function ParameterPicker() {
                 <X />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="right">
-              {t("parameterPicker.clearFileSelection")}
-            </TooltipContent>
+            <TooltipContent side="right">{t("parameterPicker.clearFileSelection")}</TooltipContent>
           </Tooltip>
         </div>
       ) : (
-      <div className="flex flex-row gap-2">
-        <Tooltip>
-          <TooltipTrigger>
-            <Button className="w-32" size={"lg"} onClick={handleSelectFiles}>{t("parameterPicker.selectFiles")}</Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {t("parameterPicker.selectFilesTip")}
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger>
-            <Button className="w-32" size={"lg"} onClick={handleSelectFolder}>{t("parameterPicker.selectFolder")}</Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {t("parameterPicker.selectFolderTip")}
-          </TooltipContent>
-        </Tooltip>
-      </div>
+        <div className="flex flex-row gap-2">
+          <Tooltip>
+            <TooltipTrigger>
+              <Button className="w-32" size={"lg"} onClick={handleSelectFiles}>
+                {t("parameterPicker.selectFiles")}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t("parameterPicker.selectFilesTip")}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button className="w-32" size={"lg"} onClick={handleSelectInputFolder}>
+                {t("parameterPicker.selectFolder")}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t("parameterPicker.selectFolderTip")}</TooltipContent>
+          </Tooltip>
+        </div>
       )}
-      <Separator className={"mt-3 mb-2"}/>
-      <h3 className="font-heading font-semibold pb-2 pt-2">{t("parameterPicker.output")}</h3>
+      <Separator className={"mt-3 mb-2"} />
+      <h3 className="pt-2 pb-2 font-heading font-semibold">{t("parameterPicker.output")}</h3>
       <FieldGroup>
         <Field data-invalid={suffixIsInvalid}>
           <FieldLabel htmlFor="input-suffix">{t("parameterPicker.suffix")}</FieldLabel>
@@ -113,20 +134,41 @@ function ParameterPicker() {
             onChange={(event) => setSuffix(event.target.value)}
             placeholder="-converted"
             aria-invalid={suffixIsInvalid}
-            aria-describedby={suffixIsInvalid
-              ? "input-suffix-description input-suffix-error"
-              : "input-suffix-description"}
+            aria-describedby={
+              suffixIsInvalid
+                ? "input-suffix-description input-suffix-error"
+                : "input-suffix-description"
+            }
           />
           <FieldDescription id="input-suffix-description">
             {t("parameterPicker.suffixDescription")}
           </FieldDescription>
           {suffixIsInvalid && (
-            <FieldError id="input-suffix-error">
-              {t("parameterPicker.invalidSuffix")}
-            </FieldError>
+            <FieldError id="input-suffix-error">{t("parameterPicker.invalidSuffix")}</FieldError>
           )}
         </Field>
-        <Button>{t("parameterPicker.selectOutputFolder")}</Button>
+        {outputFolder !== "" ? (
+          <div className="flex flex-row items-center gap-2">
+            <p>
+              {t("parameterPicker.outputLocation")}
+              {outputFolder}
+            </p>
+            <Tooltip>
+              <TooltipTrigger>
+                <Button variant={"outline"} size={"icon-lg"} onClick={() => setOutputFolder("")}>
+                  <X />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {t("parameterPicker.clearFileSelection")}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        ) : (
+          <Button onClick={handleSelectOutputFolder}>
+            {t("parameterPicker.selectOutputFolder")}
+          </Button>
+        )}
       </FieldGroup>
       <div className="pt-100"></div>
       <Button onClick={() => setInputFiles(["1,", "2,", "3"])}>Test File Selection</Button>

@@ -5,8 +5,10 @@ function Converter() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col p-5 w-[70vw]">
-      <h2 className="text-foreground font-heading text-[2rem] font-semibold">{t("converter.title")}</h2>
+    <div className="flex w-[70vw] flex-col p-5">
+      <h2 className="font-heading text-[2rem] font-semibold text-foreground">
+        {t("converter.title")}
+      </h2>
       <p className="text-muted-foreground">{t("converter.description")}</p>
       <ParameterPicker />
     </div>
