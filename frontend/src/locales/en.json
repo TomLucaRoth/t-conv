@@ -10,20 +10,29 @@
     "useLRFCheckbox": "Use LRF measurement as distance",
     "useLRFDescription": "If active, the distance the DJI drone measured using its Laser Range Finder will be set as the thermography's distance parameter",
     "selectFiles": "select files",
-    "selectFilesTip": "each selected file will be converted",
+    "selectFilesTip": "all chosen files will be selected",
     "selectFolder": "select folder",
-    "selectFolderTip": "all RJPEGs in the selected folder will be converted",
+    "selectFolderTip": "all RJPEGs in the chosen folder will be selected",
     "noFilesFoundTitle": "No compatible files found",
     "noFilesFoundDescription": "The selected folder did not contain any RJPEGs",
     "settings": "Settings",
     "input": "Input",
-    "filesSelected": "{{numberOfFiles}} files selected",
+    "filesSelected_one": "{{count}} file selected",
+    "filesSelected_other": "{{count}} files selected",
     "clearFileSelection": "clear file selection",
     "output": "Output",
     "suffix": "Suffix",
     "suffixDescription": "The suffix will be appended to the file name of each converted image",
     "invalidSuffix": "The suffix cannot contain control characters or any of < > : \" / \\ | ? * or end with a space or period",
+    "outputLocation": "Output Location",
+    "noOutputFolderSelected": "Select an output folder to start converting",
+    "outputLocationDescription": "The converted images will be saved at: ",
     "selectOutputFolder": "select an output folder",
-    "outputLocation": "Converted files will be saved in: "
+    "changeOutputFolder": "change output folder",
+    "convert": "convert",
+    "convertToolTip": {
+      "selectInputFiles": "select input files before converting",
+      "selectOutputFolder": "select an output folder before converting"
+    }
   }
 }

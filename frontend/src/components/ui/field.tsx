@@ -64,6 +64,7 @@ const fieldVariants = cva("group/field flex w-full gap-2 data-[invalid=true]:tex
   },
 });
 
+/* eslint-disable jsx-a11y/prefer-tag-over-role -- Field is a layout primitive; use FieldSet for native form-group semantics. */
 function Field({
   className,
   orientation = "vertical",
@@ -79,6 +80,7 @@ function Field({
     />
   );
 }
+/* eslint-enable jsx-a11y/prefer-tag-over-role */
 
 function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
   return (

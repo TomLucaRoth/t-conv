@@ -5,6 +5,7 @@ import { toast } from "@/components/ui/toast"
 import { Checkbox } from "./ui/checkbox";
 import {
   Field,
+  FieldTitle,
   FieldContent,
   FieldDescription,
   FieldError,
@@ -15,8 +16,9 @@ import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Input } from "./ui/input";
 import { useConversionParametersStore } from "@/stores/conversionParameterStore";
-import { X } from "lucide-react";
+import { X, RefreshCw } from "lucide-react";
 import {
+  OpenFolder,
   OpenInputFilePicker,
   OpenInputFolderPicker,
   OpenSaveLocationPicker,
@@ -36,20 +38,34 @@ function ParameterPicker() {
   const { useLRF, setUseLRF, inputFiles, setInputFiles, outputFolder, setOutputFolder } =
     useConversionParametersStore();
   const [suffix, setSuffix] = useState("");
+  const [nudgeInputButtons, setNudgeInputButtons] = useState(false);
+  const [nudgeOutputButton, setNudgeOutputButton] = useState(false);
+  const [convertError, setConvertError] = useState<string | null>(null);
   const suffixIsInvalid = !isValidFileSuffix(suffix);
 
+  const convertBtnTooltip = (() => {
+    if (inputFiles.length === 0) {
+      return "selectInputFiles";
+    }
+    if (outputFolder === "") {
+      return "selectOutputFolder"
+    }
+    return ""
+  })()
+
   const handleSelectFiles = () => {
-    OpenInputFilePicker().then((inputFiles) => {
-      if (inputFiles.length === 0) {
+    OpenInputFilePicker().then((chosenFiles) => {
+      if (chosenFiles.length === 0) {
         return;
       }
-      setInputFiles(inputFiles);
+      setInputFiles(chosenFiles);
+      setConvertError((error) => (error === "selectInputFiles" ? null : error));
     });
   };
 
   const handleSelectInputFolder = () => {
-    OpenInputFolderPicker().then((inputFiles) => {
-      if (inputFiles.length === 0) {
+    OpenInputFolderPicker().then((selectedFiles) => {
+      if (selectedFiles.length === 0) {
         toast.add({
           type: "warning",
           title: t("parameterPicker.noFilesFoundTitle"),
@@ -57,17 +73,25 @@ function ParameterPicker() {
         })
         return;
       }
-      setInputFiles(inputFiles);
+      setInputFiles(selectedFiles);
+      setConvertError((error) => (error === "selectInputFiles" ? null : error));
     });
   };
 
   const handleSelectOutputFolder = () => {
-    OpenSaveLocationPicker().then((outputFolder) => {
-      if (outputFolder === "") {
+    OpenSaveLocationPicker().then((chosenFolder) => {
+      if (chosenFolder === "") {
         return;
       }
-      setOutputFolder(outputFolder);
+      setOutputFolder(chosenFolder);
+      setConvertError((error) => (error === "selectOutputFolder" ? null : error));
     });
+  };
+
+  const handleConvert = () => {
+    setNudgeInputButtons(inputFiles.length === 0);
+    setNudgeOutputButton(outputFolder === "");
+    setConvertError(convertBtnTooltip || null);
   };
 
   return (
@@ -93,7 +117,7 @@ function ParameterPicker() {
       <h3 className="pb-2 font-heading font-semibold">{t("parameterPicker.input")}</h3>
       {inputFiles.length !== 0 ? (
         <div className="flex flex-row items-center gap-2">
-          <p>{t("parameterPicker.filesSelected", { numberOfFiles: inputFiles.length })}</p>
+          <p>{t("parameterPicker.filesSelected", { count: inputFiles.length })}</p>
           <Tooltip>
             <TooltipTrigger>
               <Button variant={"outline"} size={"icon-lg"} onClick={() => setInputFiles([])}>
@@ -107,7 +131,12 @@ function ParameterPicker() {
         <div className="flex flex-row gap-2">
           <Tooltip>
             <TooltipTrigger>
-              <Button className="w-32" size={"lg"} onClick={handleSelectFiles}>
+              <Button
+                className={`w-32 ${nudgeInputButtons ? "animate-nudge" : ""}`}
+                size={"lg"}
+                onClick={handleSelectFiles}
+                onAnimationEnd={() => setNudgeInputButtons(false)}
+              >
                 {t("parameterPicker.selectFiles")}
               </Button>
             </TooltipTrigger>
@@ -115,7 +144,12 @@ function ParameterPicker() {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger>
-              <Button className="w-32" size={"lg"} onClick={handleSelectInputFolder}>
+              <Button
+                className={`w-32 ${nudgeInputButtons ? "animate-nudge" : ""}`}
+                size={"lg"}
+                onClick={handleSelectInputFolder}
+                onAnimationEnd={() => setNudgeInputButtons(false)}
+              >
                 {t("parameterPicker.selectFolder")}
               </Button>
             </TooltipTrigger>
@@ -147,32 +181,56 @@ function ParameterPicker() {
             <FieldError id="input-suffix-error">{t("parameterPicker.invalidSuffix")}</FieldError>
           )}
         </Field>
-        {outputFolder !== "" ? (
-          <div className="flex flex-row items-center gap-2">
-            <p>
-              {t("parameterPicker.outputLocation")}
-              {outputFolder}
-            </p>
-            <Tooltip>
-              <TooltipTrigger>
-                <Button variant={"outline"} size={"icon-lg"} onClick={() => setOutputFolder("")}>
-                  <X />
+        <Field>
+          <FieldTitle id="output-location-title">
+            {t("parameterPicker.outputLocation")}
+          </FieldTitle>
+
+          <FieldDescription id="output-location-description">
+            {outputFolder === "" ? (
+              t("parameterPicker.noOutputFolderSelected")
+            ) : (
+              <>
+                {t("parameterPicker.outputLocationDescription")}
+                <Button
+                  onClick={() => void OpenFolder(outputFolder)}
+                  className="h-auto p-0"
+                  variant="link"
+                >
+                  {outputFolder}
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                {t("parameterPicker.clearFileSelection")}
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        ) : (
-          <Button onClick={handleSelectOutputFolder}>
-            {t("parameterPicker.selectOutputFolder")}
+              </>
+            )}
+          </FieldDescription>
+
+          <Button
+            onClick={handleSelectOutputFolder}
+            onAnimationEnd={() => setNudgeOutputButton(false)}
+            aria-describedby="output-location-description"
+            className={`max-w-[40%] ${nudgeOutputButton ? "animate-nudge" : ""}`}
+          >
+            {t(
+              outputFolder === ""
+                ? "parameterPicker.selectOutputFolder"
+                : "parameterPicker.changeOutputFolder",
+            )}
           </Button>
-        )}
+        </Field>
       </FieldGroup>
-      <div className="pt-100"></div>
-      <Button onClick={() => setInputFiles(["1,", "2,", "3"])}>Test File Selection</Button>
-      <Button onClick={() => setInputFiles([])}>Clear</Button>
+      <Separator className={"mt-3 mb-2"} />
+      {convertError && (
+        <p className="mb-1 text-xs text-destructive">
+          {t("parameterPicker.convertToolTip." + convertError)}
+        </p>
+      )}
+      <Tooltip disabled={convertBtnTooltip === ""}>
+        <TooltipTrigger>
+          <Button className={"w-fit px-10"} onClick={handleConvert}>
+            <RefreshCw data-icon="inline-center" />{t("parameterPicker.convert")}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">{t("parameterPicker.convertToolTip." + convertBtnTooltip)}</TooltipContent>
+      </Tooltip>
     </div>
   );
 }

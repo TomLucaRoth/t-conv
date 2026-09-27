@@ -3,9 +3,11 @@ package backend
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	goruntime "runtime"
 	"strconv"
 	"strings"
 
@@ -155,6 +157,37 @@ func (a *App) OpenSaveLocationPicker() (string, error) {
 	}
 
 	return selection, nil
+}
+
+func (a *App) OpenFolder(path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("open folder: %w", err)
+	}
+	if !info.IsDir() {
+		return fmt.Errorf("open folder: %q is not a directory", path)
+	}
+
+	var cmd *exec.Cmd
+	switch goruntime.GOOS {
+	case "darwin":
+		cmd = exec.Command("open", path)
+	case "windows":
+		cmd = exec.Command("explorer.exe", path)
+	case "linux":
+		cmd = exec.Command("xdg-open", path)
+	default:
+		return fmt.Errorf("open folder: unsupported platform %q", goruntime.GOOS)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("open folder: %w", err)
+	}
+	go func() {
+		_ = cmd.Wait()
+	}()
+
+	return nil
 }
 
 func (a *App) RunConversion(filepaths []string, useLRF bool, outputDir string, suffix string) error {

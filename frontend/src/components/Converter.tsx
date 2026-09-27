@@ -5,7 +5,7 @@ function Converter() {
   const { t } = useTranslation();
 
   return (
-    <div className="flex w-[70vw] flex-col p-5">
+    <div className="flex w-128 flex-col p-5">
       <h2 className="font-heading text-[2rem] font-semibold text-foreground">
         {t("converter.title")}
       </h2>

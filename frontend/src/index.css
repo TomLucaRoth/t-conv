@@ -128,3 +128,20 @@
     @apply font-sans;
   }
 }
+
+@keyframes nudge {
+  25% {
+    transform: translateY(-3px);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--destructive) 30%, transparent);
+  }
+  75% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-nudge {
+  animation: nudge 600ms ease-in-out;
+}
